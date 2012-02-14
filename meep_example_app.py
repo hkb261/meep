@@ -1,6 +1,7 @@
 import meeplib
 import traceback
 import cgi
+import meepcookie
 
 
 class MeepExampleApp(object):
@@ -8,15 +9,29 @@ class MeepExampleApp(object):
     WSGI app object.
     """
     def __init__(self):
-    	meeplib.initialize()
-        self.username = None
-
+        meeplib.initialize()
+    
+    def getUser(self, environ):
+        username = meepcookie.get_cookie_value(environ,'username')
+        user = None
+        if username != '':
+            user = meeplib.get_user(username)
+        return user
+    
+    def log_user_in(self, environ, headers, username):
+        cookie_name, cookie_val = \
+            meepcookie.make_set_cookie_header('username', username)
+        headers.append((cookie_name, cookie_val))
+        
     def index(self, environ, start_response):
-        print "number of users: %d" %(len(meeplib._users),)
+        
+        user = self.getUser(environ)
+        if user != None:
+            s = ["""you are logged in as user: %s.<p><a href='/m/add'>Add a message</a><p><a href='/logout'>Log out</a><p><a href='/m/list'>Show messages</a>""" % (user.username,)]
+        else:
+            s=["""Please login to create and delete messages<p><a href='/login'>Log in</a><p><a href='/create_user'>Create a New User</a><p><a href='/m/list'>Show messages</a>"""]
+        
         start_response("200 OK", [('Content-type', 'text/html')])
-        s=["""Please login to create and delete messages<p><a href='/login'>Log in</a><p><a href='/create_user'>Create a New User</a><p><a href='/m/list'>Show messages</a>"""]
-        if self.username is not None:
-            s = ["""you are logged in as user: %s.<p><a href='/m/add'>Add a message</a><p><a href='/logout'>Log out</a><p><a href='/m/list'>Show messages</a>""" % (self.username,)]
         return s
 
     def login(self, environ, start_response):
@@ -49,11 +64,12 @@ class MeepExampleApp(object):
         if username != '' and password != '':
             user = meeplib.get_user(username)
             if user is not None and user.password == password:
+                self.log_user_in(environ, headers, user.username)
+
                 ## send back a redirect to '/'
                 k = 'Location'
                 v = '/'
                 headers.append((k, v))
-                self.username = username
             elif user is None:
                 s.append('''Login Failed! <br>
                     The Username you provided does not exist<p>''')
@@ -82,9 +98,10 @@ class MeepExampleApp(object):
 
     def logout(self, environ, start_response):
 
-        self.username =  None
-
         headers = [('Content-type', 'text/html')]
+        cookie_name, cookie_val = \
+            meepcookie.delete_cookie(environ, 'username')
+        headers.append((cookie_name, cookie_val))
 
         # send back a redirect to '/'
         k = 'Location'
@@ -144,7 +161,7 @@ class MeepExampleApp(object):
                 k = 'Location'
                 v = '/'
                 headers.append((k, v))
-                self.username = username
+                self.log_user_in(environ, headers, u.username)
         elif password != '' or password2 != '':
             s.append('''Creation Failed! <br>
             Please provide a Username<p>''')
@@ -199,9 +216,10 @@ class MeepExampleApp(object):
 </div>
 """  
         s = []
+        u = self.getUser(environ)
         for m in messages:
              hide = ""
-             if self.username is None:
+             if u is None:
                  hide = "hidden"
              msg = template % (m.title, m.post, m.author.username, hide, m.id)
              replies = m.get_replies()
@@ -241,12 +259,15 @@ class MeepExampleApp(object):
         response = "200 OK"
         
         headers = [('Content-type', 'text/html')]
-        
+        u = self.getUser(environ)
+        if u == None:
+        	eror = True
+        	errorMsg = """You must be logged in to proceed."""
         if msg == None:
             error = True
             errorMsg = """Message id%d could not be found.""" % (msgId,)
         elif action == "Delete":
-            if msg.author.username == self.username:
+            if msg.author.username == u.username:
                 meeplib.delete_message(msg)
                 response = "302 Found"
                 headers.append(('Location', '/m/list'))
@@ -256,7 +277,7 @@ class MeepExampleApp(object):
         elif action == "Reply":
             title = ""
             message = form['replyText'].value
-            user = meeplib.get_user(self.username)
+            user = meeplib.get_user(u.username)
             new_message = meeplib.Message(title, message, user, True)
             msg.add_reply(new_message)
             response = "302 Found"
@@ -267,7 +288,8 @@ class MeepExampleApp(object):
         return [errorMsg]
 
     def add_message(self, environ, start_response):
-        if self.username is None:
+    	u = self.getUser(environ)
+        if u is None:
             headers = [('Content-type', 'text/html')]
             start_response("302 Found", headers)
             return ["You must be logged in to user this feature <p><a href='/login'>Log in</a><p><a href='/m/list'>Show messages</a>"]
@@ -276,10 +298,11 @@ class MeepExampleApp(object):
 
         start_response("200 OK", headers)
 
-        return '''<form action='add_action' method='POST'>Title: <input type='text' name='title'><br>Message:<input type='text' name='message'><br><input type='submit'></form>'''
+        return '''<form action='add_action' method='GET'>Title: <input type='text' name='title'><br>Message:<input type='text' name='message'><br><input type='submit'></form>'''
 
     def add_message_action(self, environ, start_response):
-        if self.username is None:
+    	u = self.getUser(environ)
+        if u.username is None:
             headers = [('Content-type', 'text/html')]
             start_response("302 Found", headers)
             return ["You must be logged in to user this feature <p><a href='/login'>Log in</a><p><a href='/m/list'>Show messages</a>"]
@@ -291,9 +314,7 @@ class MeepExampleApp(object):
         title = form['title'].value
         message = form['message'].value
 
-        user = meeplib.get_user(self.username)
-
-        new_message = meeplib.Message(title, message, user)
+        new_message = meeplib.Message(title, message, u)
 
         headers = [('Content-type', 'text/html')]
         headers.append(('Location', '/m/list'))
