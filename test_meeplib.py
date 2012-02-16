@@ -8,29 +8,27 @@ import meeplib
 # setUp and tearDown are run *once* for *each* test_ function.
 
 class TestMeepLib(unittest.TestCase):
+    
     def setUp(self):
-        u = meeplib.User('foo', 'bar')
-        m = meeplib.Message('the title', 'the content', u)
+        self.ux = 'foo'
+        self.px = 'bar'
+        self.msgTitle = 'the title'
+        self.msgMsg = 'the content'
+        u = meeplib.User(self.ux, self.px)
+        m = meeplib.Message(self.msgTitle, self.msgMsg, u)
+        self.msgId = m.id
 
     def test_for_message_existence(self):
-        x = meeplib.get_all_messages()
-        assert len(x) == 1
-        assert x[0].title == 'the title'
-        assert x[0].post == 'the content'
+        assert meeplib.get_message(self.msgId) != None
+
+    def test_user_existence(self):
+        assert meeplib.get_user(self.ux) != None
 
     def test_message_ownership(self):
-        x = meeplib.get_all_users()
-        assert len(x) == 1
-        u = x[0]
-
-        x = meeplib.get_all_messages()
-        assert len(x) == 1
-        m = x[0]
-
-        assert m.author == u
+        assert meeplib.get_message(self.msgId).author == meeplib.get_user(self.ux)
     
     def test_add_reply(self):
-        msg = meeplib.get_all_messages()[0]
+        msg = meeplib.get_message(self.msgId)
         new_message = meeplib.Message('reply', 'reply msg',  msg.author, True)
         msg.add_reply(new_message)
         
@@ -38,22 +36,23 @@ class TestMeepLib(unittest.TestCase):
         assert len(replies) == 1
         
     def test_delete_message(self):
-        msg = meeplib.get_all_messages()[0]
+        msg = meeplib.get_message(self.msgId)
         meeplib.delete_message(msg)
         
-        assert len(meeplib.get_all_messages()) == 0
+        print (meeplib.get_message(self.msgId),)
+        assert meeplib.get_message(self.msgId) == None
 
     def tearDown(self):
-        if len(meeplib.get_all_messages()) > 0:
-            m = meeplib.get_all_messages()[0]
+        m = meeplib.get_message(self.msgId)
+        if m != None:
             meeplib.delete_message(m)
+            
 
-        u = meeplib.get_all_users()[0]
-        meeplib.delete_user(u)
-
-        assert len(meeplib._messages) == 0
-        assert len(meeplib._users) == 0
-        assert len(meeplib._user_ids) == 0
+        l = len(meeplib.get_all_users())
+        meeplib.delete_user(meeplib.get_user(self.ux))
+        lafter = len(meeplib.get_all_users())
+        
+        assert l > lafter
 
 if __name__ == '__main__':
     unittest.main()

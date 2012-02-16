@@ -67,10 +67,6 @@ def initialize():
         print 'successfully loaded data'
     except:  # file does not exist/cannot be opened
         print 'error loading. loading defaults'
-        # create a default user
-        u = User('foo', 'bar')
-        # create a single message
-        Message('my title', 'This is my message!', u)
 
 def _save():
     obj = []
@@ -146,7 +142,7 @@ def get_all_messages(sort_by='id'):
     return _messages.values()
 
 def get_message(id):
-    return _messages[id]
+    return _messages.get(id)
 
 def delete_message(msg):
     assert isinstance(msg, Message)
