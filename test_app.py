@@ -38,10 +38,8 @@ class TestApp(unittest.TestCase):
         self.environ['QUERY_STRING'] = urllib.urlencode(form_dict)
         
         def fake_start_response2(status, headers):
-            #assert status == '302 Found'
-            for h in headers:
-            	print h
-            assert ('cookie', 'username=%s' % (self.ux,)) in headers
+            assert status == '302 Found'
+            assert ('Set-Cookie', 'username=%s; Path=/' % (self.ux,)) in headers
 
         data = self.app(self.environ, fake_start_response2)
         
@@ -91,7 +89,7 @@ class TestApp(unittest.TestCase):
         self.environ['PATH_INFO'] ='/create_user'
         self.environ['wsgi.input'] = ''
         def fake_start_response(status, headers):
-            assert status == '302 Found'
+            assert status == '200 OK'
             assert ('Content-type', 'text/html') in headers
 
         data = self.app(self.environ, fake_start_response)
