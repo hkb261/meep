@@ -2,6 +2,7 @@ import meeplib
 import traceback
 import cgi
 import meepcookie
+from cgi import parse_qs, escape
 
 
 class MeepExampleApp(object):
@@ -104,7 +105,7 @@ class MeepExampleApp(object):
     def logout(self, environ, start_response):
 
         headers = [('Content-type', 'text/html')]
-        log_user_out(environ, headers)
+        self.log_user_out(environ, headers)
         # send back a redirect to '/'
         k = 'Location'
         v = '/'
@@ -115,62 +116,82 @@ class MeepExampleApp(object):
     def create_user(self, environ, start_response):
         headers = [('Content-type', 'text/html')]
 
-        print "do i have input?", environ['wsgi.input']
-        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
-        print "form", form
+        post = (environ.get('REQUEST_METHOD') == 'POST')
+        if post:
+            form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        else:
+            form = parse_qs(environ['QUERY_STRING'])
 
         try:
-            username = form['username'].value
-            # retrieve user
+            if post:
+                username = form['username'].value
+            else:
+                username = form.get('username','')[0]
             print "we gots a username", username
-        except KeyError:
+        except:
             username = ''
             print "no user input"
 
         try:
-            password = form['password'].value
+            if post:
+                password = form['password'].value
+            else:
+                password = form.get('password', '')[0]
             print "we gots a password", password
-        except KeyError:
+        except:
             password = ''
             print 'no password input'
 
         try:
-            password2 = form['password_confirm'].value
+            if post:
+                password2 = form['password_confirm'].value
+            else:
+                password2 = form.get('password_confirm', '')[0]
             print "we gots a password", password
-        except KeyError:
+        except:
             password2 = ''
             print 'no password confirmation'
 
         s=[]
-
+        
         ##if we have username and password and confirmation password
         if username != '':
             user = meeplib.get_user(username)
             ## user already exists
+            print 'afterlookup'
+            print user
+            
             if user is not None:
+                print 'here'
                 s.append('''Creation Failed! <br>
                     User already exists, please use a different Username<p>''')
             ## user doesn't exist but they messed up the passwords
             elif password == '':
+                print 'here2'
                 s.append('''Creation Failed! <br>
                     Please fill in the Password field<p>''')
             elif password != password2:
+                print 'here3'
                 s.append('''Creation Failed! <br>
                     The Password and Confirmation Password you provided did not match<p>''')
             else:
+                print 'creating new user'
                 u = meeplib.User(username, password)
                 ## send back a redirect to '/'
                 k = 'Location'
                 v = '/'
                 headers.append((k, v))
                 self.log_user_in(environ, headers, u.username)
+                print 'created'
+                start_response('302 Found', headers)
+                return []
         elif password != '' or password2 != '':
+            print 'here4'
             s.append('''Creation Failed! <br>
             Please provide a Username<p>''')
 
 
-        start_response('302 Found', headers)
-
+        start_response('200 OK', headers)
         ##if we have a valid username and password this is not executed
         s.append('''
                     <form action='create_user' method='post'>
@@ -331,7 +352,7 @@ class MeepExampleApp(object):
             return ["You must be logged in to delete your user. <p><a href='/login'>Log in</a><p><a href='/m/list'>Show messages</a>"]
         
         meeplib.delete_user(u)
-        log_user_out(environ, headers)
+        self.log_user_out(environ, headers)
         
         headers = [('Content-type', 'text/html')]
         start_response("200 OK", headers)
@@ -375,6 +396,7 @@ class MeepExampleApp(object):
             return fn(environ, start_response)
         except:
             tb = traceback.format_exc()
+            print tb
             x = "<h1>Error!</h1><pre>%s</pre>" % (tb,)
 
             status = '500 Internal Server Error'
