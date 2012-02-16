@@ -6,7 +6,7 @@ class TestApp(unittest.TestCase):
         app = meep_example_app.MeepExampleApp()
         self.app = app
 
-    def test_index(self):
+    def test_PageShows_Index_LoggedOut(self):
         environ = {}                    # make a fake dict
         environ['PATH_INFO'] = '/'
 
@@ -18,7 +18,22 @@ class TestApp(unittest.TestCase):
         assert 'Create a New User' in data[0]
         assert 'Show messages' in data[0]
 
-    def test_CreateUser(self):
+    def test_PageShows_Index_LoggedIn(self):
+        environ = {}
+        environ['PATH_INFO'] ='/'
+        environ['HTTP_COOKIE'] = "username=test"
+       
+        def fake_start_response(status, headers):
+            assert status == '200 OK'
+            assert ('Content-type', 'text/html') in headers
+
+        data = self.app(environ, fake_start_response)
+        print 'data printing'
+        print data[0]
+        assert 'you are logged in as user: test.' in data[0]
+        assert 'Show messages' in data[0]
+
+    def test_PageShows_CreateUser_LoggedOut(self):
        environ = {}
        environ['PATH_INFO'] ='/create_user'
        environ['wsgi.input'] = ''
@@ -31,7 +46,7 @@ class TestApp(unittest.TestCase):
        assert 'password:' in data[0]
        assert 'confirm password:' in data[0]
 
-    def test_Login(self):
+    def test_PageShows_Login(self):
        environ = {}
        environ['PATH_INFO'] ='/login'
        environ['wsgi.input'] = ''
@@ -44,7 +59,7 @@ class TestApp(unittest.TestCase):
        assert 'username' in data[0]
        assert 'password' in data[0]
 
-    def test_Show_Messages(self):
+    def test_PageShows_ShowMessages_LoggedOut(self):
         environ = {}
         environ['PATH_INFO'] ='/m/list'
         environ['wsgi.input'] = ''
@@ -53,7 +68,25 @@ class TestApp(unittest.TestCase):
              assert ('Content-type', 'text/html') in headers
 
         data = self.app(environ, fake_start_response)
-        assert '''Hayden Boroski's Message Board''' in data[0]       
+        assert '''Hayden Boroski's Message Board''' in data[0]
+        
+        #verify reply buttons are hidden.
+        assert '''class="messageReply hidden"''' in data[0]
+
+    def test_PageShows_ShowMessages_LoggedIn(self):
+        environ = {}
+        environ['PATH_INFO'] ='/m/list'
+        environ['HTTP_COOKIE'] = "username=test"
+        environ['wsgi.input'] = ''
+        def fake_start_response(status, headers):
+             assert status == '200 OK'
+             assert ('Content-type', 'text/html') in headers
+
+        data = self.app(environ, fake_start_response)
+        assert '''Hayden Boroski's Message Board''' in data[0]
+        
+        #verify reply buttons are hidden.
+        assert '''class="messageReply hidden"''' in data[0]
         
 
     def tearDown(self):

@@ -23,6 +23,11 @@ class MeepExampleApp(object):
             meepcookie.make_set_cookie_header('username', username)
         headers.append((cookie_name, cookie_val))
         
+    def log_user_out(self, environ, headers):
+        cookie_name, cookie_val = \
+            meepcookie.delete_cookie(environ, 'username')
+        headers.append((cookie_name, cookie_val))
+        
     def index(self, environ, start_response):
         
         user = self.getUser(environ)
@@ -99,10 +104,7 @@ class MeepExampleApp(object):
     def logout(self, environ, start_response):
 
         headers = [('Content-type', 'text/html')]
-        cookie_name, cookie_val = \
-            meepcookie.delete_cookie(environ, 'username')
-        headers.append((cookie_name, cookie_val))
-
+        log_user_out(environ, headers)
         # send back a redirect to '/'
         k = 'Location'
         v = '/'
@@ -261,8 +263,8 @@ class MeepExampleApp(object):
         headers = [('Content-type', 'text/html')]
         u = self.getUser(environ)
         if u == None:
-        	eror = True
-        	errorMsg = """You must be logged in to proceed."""
+            eror = True
+            errorMsg = """You must be logged in to proceed."""
         if msg == None:
             error = True
             errorMsg = """Message id%d could not be found.""" % (msgId,)
@@ -288,7 +290,7 @@ class MeepExampleApp(object):
         return [errorMsg]
 
     def add_message(self, environ, start_response):
-    	u = self.getUser(environ)
+        u = self.getUser(environ)
         if u is None:
             headers = [('Content-type', 'text/html')]
             start_response("302 Found", headers)
@@ -301,7 +303,7 @@ class MeepExampleApp(object):
         return '''<form action='add_action' method='GET'>Title: <input type='text' name='title'><br>Message:<input type='text' name='message'><br><input type='submit'></form>'''
 
     def add_message_action(self, environ, start_response):
-    	u = self.getUser(environ)
+        u = self.getUser(environ)
         if u.username is None:
             headers = [('Content-type', 'text/html')]
             start_response("302 Found", headers)
@@ -320,6 +322,21 @@ class MeepExampleApp(object):
         headers.append(('Location', '/m/list'))
         start_response("302 Found", headers)
         return ["message added"]
+    
+    def delete_loggedin_user_action(self, environ, start_response):
+        u = self.getUser(environ)
+        if u.username is None:
+            headers = [('Content-type', 'text/html')]
+            start_response("200 OK", headers)
+            return ["You must be logged in to delete your user. <p><a href='/login'>Log in</a><p><a href='/m/list'>Show messages</a>"]
+        
+        meeplib.delete_user(u)
+        log_user_out(environ, headers)
+        
+        headers = [('Content-type', 'text/html')]
+        start_response("200 OK", headers)
+        return ["You have successfully deleted this user."]
+        
         
     def __call__(self, environ, start_response):
         # store url/function matches in call_dict
@@ -335,6 +352,19 @@ class MeepExampleApp(object):
 
         # see if the URL is in 'call_dict'; if it is, call that function.
         url = environ['PATH_INFO']
+        if environ['PATH_INFO'] == '/favicon.ico':
+            status = '404 Not Found'
+            start_response(status, [('Content-type', 'text/html')])
+            return []
+        print 'REQUEST_METHOD %s' % (environ['REQUEST_METHOD'],)
+        print 'PATH_INFO %s' % (environ['PATH_INFO'],)
+        print 'SCRIPT_NAME %s' % (environ['SCRIPT_NAME'],)
+        print 'QUERY_STRING %s' % (environ['QUERY_STRING'],)
+        print 'CONTENT_TYPE %s' % (environ['CONTENT_TYPE'],)
+        print 'CONTENT_LENGTH %s' % (environ['CONTENT_LENGTH'],)
+        print 'SERVER_NAME %s' % (environ['SERVER_NAME'],)
+        print 'SERVER_PORT %s' % (environ['SERVER_PORT'],)
+        print 'SERVER_PROTOCOL %s' % (environ['SERVER_PROTOCOL'],)
         fn = call_dict.get(url)
 
         if fn is None:
