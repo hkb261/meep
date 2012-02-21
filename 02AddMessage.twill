@@ -1,10 +1,9 @@
 go http://localhost:8000/
 follow "Add a message"
 
-fv 1 title 'test title FOO'
-fv 1 message 'this is my message'
+fv 1 title 'Twill Test Title'
+fv 1 message 'Twill Test Post'
 submit
 
-url /m/list
-find 'FOO'
-
+url /
+find 'Twill Test Post'

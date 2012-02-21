@@ -106,10 +106,10 @@ class MeepExampleApp(object):
         headers = [('Content-type', 'text/html')]
 
         post = (environ.get('REQUEST_METHOD') == 'POST')
-        #if post:
-        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
-        #else:
-        #    form = parse_qs(environ['QUERY_STRING'])
+        if post:
+        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        else:
+            form = parse_qs(environ['QUERY_STRING'])
 	
         username = self.get_value(form,post,'username','')
         password = self.get_value(form,post,'password','')
@@ -149,6 +149,12 @@ class MeepExampleApp(object):
         return [render_page('createUser.html', error=err)]
 
     def alter_message_action(self, environ, start_response):
+        post = (environ.get('REQUEST_METHOD') == 'POST')
+        if post:
+        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        else:
+            form = parse_qs(environ['QUERY_STRING'])
+        """
         try:
             form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
             #params = dict([part.split('=') for part in environ['QUERY_STRING'].split('&')])
@@ -161,9 +167,10 @@ class MeepExampleApp(object):
         id = int(form['id'].value)
         
         action = form['bttnSubmit'].value
-        print action
-        print id
+        """
         
+        id = int(self.get_value(form,post,'id',''))
+        action = self.get_value(form,post,'bttnSubmit','')
         msg = meeplib.get_message(id)
         
         error = False
@@ -177,7 +184,7 @@ class MeepExampleApp(object):
             errorMsg = """You must be logged in to proceed."""
         if msg == None:
             error = True
-            errorMsg = """Message id%d could not be found.""" % (msgId,)
+            errorMsg = """Message id: %d could not be found.""" % (id,)
         elif action == "Delete":
             if msg.author.username == u.username:
                 meeplib.delete_message(msg)
@@ -208,17 +215,21 @@ class MeepExampleApp(object):
 
     def add_message_action(self, environ, start_response):
         u = self.getUser(environ)
-        if u.username is None:
+        if u is None:
             headers = [('Content-type', 'text/html')]
             start_response("200 OK", headers)
             return ["You must be logged in to user this feature <p><a href='/login'>Log in</a><p><a href='/'>Show messages</a>"]
 
-        print environ['wsgi.input']
-        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        title = form['title'].value
-        message = form['message'].value
+        post = (environ.get('REQUEST_METHOD') == 'POST')
+        if post:
+        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        else:
+            form = parse_qs(environ['QUERY_STRING'])
 
+        title = self.get_value(form,post,'title','')
+        message = self.get_value(form,post,'message','')
+        
         new_message = meeplib.Message(title, message, u)
 
         headers = [('Content-type', 'text/html')]
@@ -228,9 +239,9 @@ class MeepExampleApp(object):
         
     
     def delete_loggedin_user_action(self, environ, start_response):
+        headers = [('Content-type', 'text/html')]
         u = self.getUser(environ)
         if u.username is None:
-            headers = [('Content-type', 'text/html')]
             start_response("200 OK", headers)
             return ["You must be logged in to delete your user. <p><a href='/login'>Log in</a><p><a href='/'>Show messages</a>"]
         
@@ -259,6 +270,7 @@ class MeepExampleApp(object):
             status = '404 Not Found'
             start_response(status, [('Content-type', 'text/html')])
             return []
+        """
         print 'REQUEST_METHOD %s' % (environ['REQUEST_METHOD'],)
         print 'PATH_INFO %s' % (environ['PATH_INFO'],)
         print 'SCRIPT_NAME %s' % (environ['SCRIPT_NAME'],)
@@ -268,6 +280,7 @@ class MeepExampleApp(object):
         print 'SERVER_NAME %s' % (environ['SERVER_NAME'],)
         print 'SERVER_PORT %s' % (environ['SERVER_PORT'],)
         print 'SERVER_PROTOCOL %s' % (environ['SERVER_PROTOCOL'],)
+        """
         fn = call_dict.get(url)
 
         if fn is None:

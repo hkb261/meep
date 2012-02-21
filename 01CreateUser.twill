@@ -1,11 +1,11 @@
 go http://localhost:8000/
-follow "Create a New User"
+follow "here"
 
-fv 1 username 'hkb261'
-fv 1 password 'test'
-fv 1 password_confirm 'test'
+fv 1 username 'twillFoo'
+fv 1 password 'bar'
+fv 1 password_confirm 'bar'
 submit
 
 url /
-find 'hkb261'
+find 'twillFoo'
 

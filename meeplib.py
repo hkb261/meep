@@ -51,22 +51,16 @@ _filename = 'save.pickle'
 
 def initialize():
     try:
-        print 'loading'
-        print _filename
         fp = open(_filename)
         # load data
         obj = pickle.load(fp)
         fp.close()
-        print 'file retrieved'
         global _users, _user_ids, _messages
         _users = obj[0]
         _user_ids = obj[1]
         _messages = obj[2]
-        print "number of users: %d" %(len(_users),)
-        print "most current user: %s" %(_users[max(_users.keys())].username,)
-        print 'successfully loaded data'
     except:  # file does not exist/cannot be opened
-        print 'error loading. loading defaults'
+		pass
 
 def _save():
     obj = []
@@ -74,11 +68,9 @@ def _save():
     obj.append(_user_ids)
     obj.append(_messages)
     try:
-        print 'saving'
         fp = open(_filename, 'w')
         pickle.dump(obj, fp)
         fp.close()
-        print 'successful'
     except IOError:
         pass
 
