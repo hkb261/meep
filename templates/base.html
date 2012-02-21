@@ -20,6 +20,7 @@
 		}
 		#title
 		{
+			position: relative;
 			text-align: left;
 			width:875px;
 			margin-left:auto;
@@ -28,6 +29,24 @@
 		#title a
 		{
 			color: #fff;
+		}
+		#divUser
+		{
+			position: absolute;
+			top: -15px;
+			right: 10px;
+			font-size:10pt;
+			background-color: #444;
+			padding: 5px;
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			-moz-border-bottom-left-radius: 5px;
+			-moz-border-bottom-right-radius: 5px;
+		    box-shadow: inset 0px -1px 2px 0px rgba(0,0,0,.8);
+		}
+		#divUser a
+		{
+			color: #acc9ea;
 		}
 		#listWrapper
 		{
@@ -46,6 +65,7 @@
 			border-radius: 5px;
 			margin-left:auto;
 			margin-right:auto;
+			margin-bottom: 5px;
 			text-align:left;	
 		}
 		.messageTitle
@@ -112,7 +132,10 @@
 		{
 			display: none;
 		}
-	</style>
+	</style>	
+	<title>{% block title %}HB's Msg Board!{% endblock title %}</title>
+	{% block head %}
+	{% endblock %}
 	<script>
 	    $(document).ready(function () {
 			$('.messageReply a').click( function () {
@@ -129,11 +152,20 @@
 	<div id="header">
 		<div id="title">
 			<h1>Hayden Boroski's Message Board</h1>
-			<a href="/">Index</a>
+			<div id="divUser">
+				{% if user is defined and user != None %}
+					Logged in as {{ user.username }} (<a href="/logout">Logout</a>)
+				{% else %}
+					<a href="/login">Log In</a>  |  Not Registered? Click <a href="/create_user">here</a>
+				{% endif %}
+			</div>
+			{% block links %}
+			{% endblock %}
 		</div>
 	</div>
 	<div id="listWrapper">
-{messageList}
+	{% block body %}
+	{% endblock %}
 	</div>
 </body>
 </html>

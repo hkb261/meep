@@ -1,0 +1,50 @@
+{% extends "form.html" %}
+
+{% block formHead %}
+<script type="text/javascript">
+	$(document).ready(function() { $('#username').focus();});
+</script>
+{% endblock %}
+
+{% block body %}
+	<div class="loginWrapper">
+			<form action='create_user' method='post'>
+			 <table style="width:100%;" cellpadding="5px">
+				<tr>
+					<td style="width:35%;" align="right">
+						<label>User Name:</label>
+					</td>
+					<td align="left">
+						<input id='username' type='text' name='username' value='' class="textBox"> 
+					</td>
+				</tr>
+				<tr>
+					<td align="right">
+						<label>Password:</label>
+					</td>
+					<td align="left">
+						<input type='password' name='password' value='' class="textBox" />
+					</td>
+				</tr>
+				<tr>
+					<td align="right">
+						<label>Confirm Password:</label>
+					</td>
+					<td align="left">
+						<input type='password' name='password_confirm' value='' class="textBox" />
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td align='right'><input type='submit' name='login button' value='Login' class="buttonSubmit"></td>
+				{% if error is defined and error == True %}
+				<tr>
+					<td align="center" colspan="2" class="errorText">
+						Either your username or password was incorrect.  Please try again.
+					</td>
+				</tr>
+				{% endif %}
+			</table>
+		</form>
+	</div>
+{% endblock body %}

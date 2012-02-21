@@ -1,0 +1,44 @@
+{% extends "form.html" %}
+
+{% block formHead %}
+<script type="text/javascript">
+	$(document).ready(function() { $('#msgTitle').focus();});
+</script>
+{% endblock %}
+
+{% block body %}
+
+	<div class="loginWrapper">
+			<form action='add_action' method='POST'>
+			 <table style="width:100%;" cellpadding="5px">
+				<tr>
+					<td style="width:35%;" align="right">
+						<label>Title:</label>
+					</td>
+					<td align="left">
+						<input id='msgTitle' type='text' name='title' value='' class="textBox"> 
+					</td>
+				</tr>
+				<tr>
+					<td align="right">
+						<label>Message:</label>
+					</td>
+					<td align="left">
+						<input type='text' name='message' value='' class="textBox" />
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td align='right'><input type='submit' class="buttonSubmit"></td>
+				{% if error is defined and error == True %}
+				<tr>
+					<td align="center" colspan="2" class="errorText">
+						There was an error processing your request.  Please verify you are logged in and try again.
+					</td>
+				</tr>
+				{% endif %}
+			</table>
+		</form>
+	</div>
+{% endblock body %}
+

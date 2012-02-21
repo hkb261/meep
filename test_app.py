@@ -42,7 +42,7 @@ class TestApp(unittest.TestCase):
             assert ('Set-Cookie', 'username=%s; Path=/' % (self.ux,)) in headers
 
         data = self.app(self.environ, fake_start_response2)
-        
+    
 
     def test_PageShows_Index_LoggedOut(self):
         print ''

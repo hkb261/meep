@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block links %}
+	{% if user is defined and user != None %}
+		<a href='/m/add'>Add a message</a>
+	{% endif %}
+{% endblock %}
+
+{% block body %}
+	{% for m in messages %}
+        <form action='/m/alterMessage' method='POST'>
+            <div class="messageCont">
+                <div class="messageTitle">
+                    <p>{{ m.title }}</p>
+	                {% if user is defined and user != None %}
+    	                <input type='submit' id='bttnDelete' name='bttnSubmit' value='Delete' onclick="return confirm('Are you sure you want to delete this message?');" />
+    	            {% endif %}
+                </div>
+                <div class="message">{{ m.post }}</div>
+                <div class="messageReply">
+                    By: {{ m.author.username }}
+                </div>
+                <div class="replies">
+                    {% for r in m.get_replies() %}
+                    	<div class="reply">
+							<p>{{ r.post }}</p>
+							<div class="messageReply">
+								By: {{ r.author.username }}
+							</div>
+						</div>
+                    {% endfor %}
+                </div>
+                {% if user is defined and user != None %}
+					<div class="messageReply %s">
+						&nbsp;<a href="#">Reply</a>
+					</div>
+					<div class="replyCont">
+						Reply: <textarea type='text' name='replyText' class="replyInput" rows="2" ></textarea>
+						<input type='submit' id='bttnReply' name='bttnSubmit' value='Reply' />
+					</div>
+				{% endif %}
+				</div>
+            <input type='hidden' name='id' value='{{ m.id }}' />
+        </form>
+	{% endfor %}
+{% endblock body %}
