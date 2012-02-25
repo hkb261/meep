@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 import sys
 import unittest
 import meep_example_app
@@ -38,8 +39,6 @@ def parse_Host(l):
 
 def parse_cookie(l):
     e['HTTP_COOKIE'] = l.split(': ')[1]
-    
-    
 
 def fake_start_response(status, headers):
 	global outputStatus, outputHeaders

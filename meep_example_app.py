@@ -58,10 +58,10 @@ class MeepExampleApp(object):
         headers = [('Content-type', 'text/html')]
 
         post = (environ.get('REQUEST_METHOD') == 'POST')
-        #if post:
-        form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
-        #else:
-        #    form = parse_qs(environ['QUERY_STRING'])
+        if post:
+        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+        else:
+            form = parse_qs(environ['QUERY_STRING'])
 	
         username = self.get_value(form,post,'username','')
         password = self.get_value(form,post,'password','')
