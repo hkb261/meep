@@ -151,7 +151,7 @@ class MeepExampleApp(object):
     def alter_message_action(self, environ, start_response):
         post = (environ.get('REQUEST_METHOD') == 'POST')
         if post:
-        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+            form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
         else:
             form = parse_qs(environ['QUERY_STRING'])
         """
@@ -168,7 +168,8 @@ class MeepExampleApp(object):
         
         action = form['bttnSubmit'].value
         """
-        
+
+        print 'post %s' % (post,)
         id = int(self.get_value(form,post,'id',''))
         action = self.get_value(form,post,'bttnSubmit','')
         msg = meeplib.get_message(id)

@@ -23,7 +23,7 @@
                 <div class="replies">
                     {% for r in m.get_replies() %}
                     	<div class="reply">
-							<p>{{ r.post }}</p>
+							<p>{{ r.post.replace('\r\n','<br/>') }}</p>
 							<div class="messageReply">
 								By: {{ r.author.username }}
 							</div>
