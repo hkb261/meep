@@ -52,7 +52,6 @@ _filename = 'save.pickle'
 def initialize():
     try:
         fp = open(_filename)
-        # load data
         obj = pickle.load(fp)
         fp.close()
         global _users, _user_ids, _messages

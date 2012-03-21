@@ -1,0 +1,16 @@
+go http://localhost:8000/
+find 'Not Registered?' #confirms that we are not logged in
+notfind 'Add a message' #can't add a message unless we're logged in.
+
+go http://localhost:8000/
+follow "Log In"
+
+fv 1 username 'twillTester'
+fv 1 password 'test'
+submit
+
+follow "Logout"
+
+#confirm logout works
+find 'Not Registered?' #confirms that we are not logged in
+notfind 'Add a message' #can't add a message unless we're logged in.

@@ -1,11 +1,11 @@
 go http://localhost:8000/
 follow "here"
 
-fv 1 username 'twillFoo'
-fv 1 password 'bar'
-fv 1 password_confirm 'bar'
+fv 1 username 'twillTester'
+fv 1 password 'test'
+fv 1 password_confirm 'test'
 submit
 
 url /
-find 'twillFoo'
+find 'Logged in as twillTester'
 

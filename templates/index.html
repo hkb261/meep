@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block body %}
-	{% for m in messages %}
+	{% for m in messages[::-1] %}
         <form action='/m/alterMessage' method='POST'>
             <div class="messageCont">
                 <div class="messageTitle">

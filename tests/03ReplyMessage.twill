@@ -1,10 +1,13 @@
-go http://localhost:8000/m/list
+go http://localhost:8000/
+follow "Log In"
 
-fv 2 replyText 'Im a twill Reply'
+fv 1 username 'twillTester'
+fv 1 password 'test'
+submit
+
+fv 1 replyText 'Im a twill Reply'
 submit bttnReply
 
 code 200
 
-url /m/list
 find 'Im a twill Reply'
-
