@@ -52,17 +52,17 @@ class MeepExampleApp(object):
         headers = [('Content-type', 'text/html')]
         start_response('200 OK', headers)
         return [render_page('index.html', user=self.getUser(environ), \
-        	messages=meeplib.get_all_messages())]
+            messages=meeplib.get_all_messages())]
 
     def login(self, environ, start_response):
         headers = [('Content-type', 'text/html')]
 
         post = (environ.get('REQUEST_METHOD') == 'POST')
         if post:
-        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+            form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
         else:
             form = parse_qs(environ['QUERY_STRING'])
-	
+    
         username = self.get_value(form,post,'username','')
         password = self.get_value(form,post,'password','')
         
@@ -107,10 +107,10 @@ class MeepExampleApp(object):
 
         post = (environ.get('REQUEST_METHOD') == 'POST')
         if post:
-        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+            form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
         else:
             form = parse_qs(environ['QUERY_STRING'])
-	
+    
         username = self.get_value(form,post,'username','')
         password = self.get_value(form,post,'password','')
         password2 = self.get_value(form,post,'password_confirm','')
@@ -142,8 +142,8 @@ class MeepExampleApp(object):
                 err = True
                 
         if post:
-        	err = True
-        	
+            err = True
+            
         headers = [('Content-type', 'text/html')]
         start_response('200 OK', headers)
         return [render_page('createUser.html', error=err)]
@@ -224,7 +224,7 @@ class MeepExampleApp(object):
 
         post = (environ.get('REQUEST_METHOD') == 'POST')
         if post:
-        	form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+            form = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
         else:
             form = parse_qs(environ['QUERY_STRING'])
 
@@ -252,7 +252,23 @@ class MeepExampleApp(object):
         headers = [('Content-type', 'text/html')]
         start_response("200 OK", headers)
         return ["You have successfully deleted this user."]
+    
+    def get_file(self, environ, start_response):
+        mimeTypes = eval("{" + open('mimetypes.config').read() + "}")
+        filepath = environ['PATH_INFO'].lstrip('/')
+        ext = '.' + filepath.partition('.')[2]
+        mime = mimeTypes[ext]
         
+        try:
+            print filepath
+            fp = open(filepath)
+        except OSerror:
+            start_response("404 Not Found", [('Content-type', 'text/html')])
+            return ["Page not found."]
+        
+        data = fp.read()
+        start_response("200 OK", [('Content-type', mime)])
+        return [data]
         
     def __call__(self, environ, start_response):
         # store url/function matches in call_dict
@@ -267,13 +283,8 @@ class MeepExampleApp(object):
 
         # see if the URL is in 'call_dict'; if it is, call that function.
         url = environ['PATH_INFO']
-        if environ['PATH_INFO'] == '/favicon.ico':
-            status = '404 Not Found'
-            start_response(status, [('Content-type', 'text/html')])
-            return []
         """
         print 'REQUEST_METHOD %s' % (environ['REQUEST_METHOD'],)
-        print 'PATH_INFO %s' % (environ['PATH_INFO'],)
         print 'SCRIPT_NAME %s' % (environ['SCRIPT_NAME'],)
         print 'QUERY_STRING %s' % (environ['QUERY_STRING'],)
         print 'CONTENT_TYPE %s' % (environ['CONTENT_TYPE'],)
@@ -282,7 +293,10 @@ class MeepExampleApp(object):
         print 'SERVER_PORT %s' % (environ['SERVER_PORT'],)
         print 'SERVER_PROTOCOL %s' % (environ['SERVER_PROTOCOL'],)
         """
-        fn = call_dict.get(url)
+        if '.' not in url:
+            fn = call_dict.get(url)
+        else:
+            fn = self.get_file
 
         if fn is None:
             start_response("404 Not Found", [('Content-type', 'text/html')])
