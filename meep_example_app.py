@@ -254,7 +254,7 @@ class MeepExampleApp(object):
         return ["You have successfully deleted this user."]
     
     def get_file(self, environ, start_response):
-        mimeTypes = eval("{" + open('mimetypes.config').read() + "}")
+        mimeTypes = eval("{" + open('util/mimetypes.config').read() + "}")
         filepath = environ['PATH_INFO'].lstrip('/')
         ext = '.' + filepath.partition('.')[2]
         mime = mimeTypes[ext]
@@ -262,7 +262,7 @@ class MeepExampleApp(object):
         try:
             print filepath
             fp = open(filepath)
-        except OSerror:
+        except IOError:
             start_response("404 Not Found", [('Content-type', 'text/html')])
             return ["Page not found."]
         
