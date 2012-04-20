@@ -114,7 +114,7 @@ class MeepExampleApp(object):
         username = self.get_value(form,post,'username','')
         password = self.get_value(form,post,'password','')
         password2 = self.get_value(form,post,'password_confirm','')
-        
+
         s=[]
         
         ##if we have username and password and confirmation password
@@ -123,13 +123,17 @@ class MeepExampleApp(object):
             user = meeplib.get_user(username)
             ## user already exists
             if user is not None:
+                print 'nouser'
                 err = True
             ## user doesn't exist but they messed up the passwords
             elif password == '':
+                print 'passblank'
                 err = True
             elif password != password2:
+                print 'pass2blank'
                 err = True
             else:
+                print 'else'
                 u = meeplib.User(username, password)
                 ## send back a redirect to '/'
                 k = 'Location'

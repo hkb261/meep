@@ -66,13 +66,12 @@ class RequestHandler(object):
         for h in response_fn_callable.headers:
             output.append(h[0] + ': ' + h[1] + '\r\n')
 
-            if len(data) > 0:
-                output.append('Content-Length: %d\r\n\r\n' % (len(data[0]),))
-                output.append(data[0])
-            else:
-                output.append('Content-Length: 0\r\n\r\n')
+        if len(data) > 0:
+            output.append('Content-Length: %d\r\n\r\n' % (len(data[0]),))
+            output.append(data[0])
+        else:
+            output.append('Content-Length: 0\r\n\r\n')
 
-            print 'returning'
         return ''.join(output)
 
     def _parse_Server_Line(self, l):
